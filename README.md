@@ -48,6 +48,19 @@ To add breaks in the video, simply add a new time (in seconds) in the list of br
       ]
     });
 
+### Manually set the video duration ###
+The markers plugin gets the duration (length in secs) of the video from the player. In some cases, e.g. using the Vimeo player plugin, the duration of the video is not correctly reported, resulting in all of the markers being displayed at 0 seconds in the control bar. To get around this issue you can pass the duration of the video (in seconds) as an option.
+
+    video.markers({
+      duration: 42,
+      markers: [
+         {time: 9.5, text: "this"},
+         {time: 16,  text: "is"},
+         {time: 23.6,text: "so"},
+         {time: 28,  text: "cool"}
+      ]
+    });      
+      
 ### Customize marker style: 
 The style of the markers could be modified by passing an optional setting "markerStyle" with your preference of css styles. 
 
@@ -65,6 +78,8 @@ The style of the markers could be modified by passing an optional setting "marke
     });
    
 ## History
+- 0.5.1
+   - add option to manually set the video duration
 - 0.5.0
    - add 'onMarkerClick' callback handler. When this returns false, the default behavior of seeking to the marker time will be prevented.
    - add new 'getMarkers' API 
