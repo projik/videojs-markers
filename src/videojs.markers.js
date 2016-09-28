@@ -12,7 +12,7 @@
       markerTip: {
          display: true,
          text: function(marker) {
-            return "Break: "+ marker.text;
+            return marker.text;
          },
          time: function(marker) {
             return marker.time;
@@ -53,15 +53,16 @@
        * register the markers plugin (dependent on jquery)
        */
    
-      var setting      = $.extend(true, {}, defaultSetting, options),
-          markersMap   = {},
-          markersList  = [], // list of markers sorted by time
-          videoWrapper = $(this.el()),
+      var setting        = $.extend(true, {}, defaultSetting, options),
+          markersMap     = {},
+          markersList    = [], // list of markers sorted by time
+          videoWrapper   = $(this.el()),
           currentMarkerIndex  = -1, 
-          player       = this,
-          markerTip    = null,
-          breakOverlay = null,
-          overlayIndex = -1;
+          player         = this,
+          markerTip      = null,
+          breakOverlay   = null,
+          playerDuration = 0,
+          overlayIndex   = -1;
           
       function sortMarkersList() {
          // sort the list by time in asc order
@@ -87,7 +88,7 @@
       }
       
       function getPosition(marker){
-         return (setting.markerTip.time(marker) / player.duration()) * 100
+         return (setting.markerTip.time(marker) / playerDuration) * 100
       }
       
       function createMarkerDiv(marker, duration) {
@@ -197,20 +198,20 @@
       }
       
       // show or hide break overlays
-      function updateBreakOverlay() {
-         if(!setting.breakOverlay.display || currentMarkerIndex < 0){
+      function updateBreakOverlay(currentTime) {
+         if(currentMarkerIndex < 0){
             return;
          }
          
-         var currentTime = player.currentTime();
          var marker = markersList[currentMarkerIndex];
          var markerTime = setting.markerTip.time(marker);
-         
+      
          if (currentTime >= markerTime && 
             currentTime <= (markerTime + setting.breakOverlay.displayTime)) {
+
             if (overlayIndex != currentMarkerIndex){
                overlayIndex = currentMarkerIndex;
-               breakOverlay.find('.vjs-break-overlay-text').html(setting.breakOverlay.text(marker));
+               breakOverlay.find('.vjs-break-overlay-text').text(setting.breakOverlay.text(marker));
             }
             
             breakOverlay.css('visibility', "visible");
@@ -230,11 +231,6 @@
       }
       
       function onTimeUpdate() {
-         onUpdateMarker();
-         updateBreakOverlay();
-      }
-      
-      function onUpdateMarker() {
          /*
              check marker reached in between markers
              the logic here is that it triggers a new marker reached event only if the player 
@@ -246,7 +242,7 @@
                return setting.markerTip.time(markersList[index + 1]);
             } 
             // next marker time of last marker would be end of video time
-            return player.duration();
+            return playerDuration;
          }
          var currentTime = player.currentTime();
          var newMarkerIndex;
@@ -256,12 +252,6 @@
             var nextMarkerTime = getNextMarkerTime(currentMarkerIndex);
             if(currentTime >= setting.markerTip.time(markersList[currentMarkerIndex]) &&
                currentTime < nextMarkerTime) {
-               return;
-            }
-            
-            // check for ending (at the end current time equals player duration)
-            if (currentMarkerIndex === markersList.length -1 &&
-               currentTime === player.duration()) {
                return;
             }
          }
@@ -277,6 +267,7 @@
                
                if(currentTime >= setting.markerTip.time(markersList[i]) &&
                   currentTime < nextMarkerTime) {
+                  
                   newMarkerIndex = i;
                   break;
                }
@@ -292,6 +283,10 @@
             currentMarkerIndex = newMarkerIndex;
          }
          
+         // update overlay
+         if(setting.breakOverlay.display) {
+            updateBreakOverlay(currentTime);
+         }
       }
       
       // setup the whole thing
@@ -299,7 +294,7 @@
          if (setting.markerTip.display) {
             initializeMarkerTip();
          }
-      
+         playerDuration = options.duration || player.duration();
          // remove existing markers if already initialized
          player.markers.removeAll();
          addMarkers(options.markers);
