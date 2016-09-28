@@ -1,5 +1,5 @@
-/*! videojs-markers - v0.5.0 - 2015-08-01
-* Copyright (c) 2015 ; Licensed  */
+/*! videojs-markers - v0.5.1 - 2016-09-29
+* Copyright (c) 2016 ; Licensed  */
 /*! videojs-markers !*/
 'use strict'; 
 
@@ -14,7 +14,7 @@
       markerTip: {
          display: true,
          text: function(marker) {
-            return "Break: "+ marker.text;
+            return marker.text;
          },
          time: function(marker) {
             return marker.time;
@@ -55,15 +55,16 @@
        * register the markers plugin (dependent on jquery)
        */
    
-      var setting      = $.extend(true, {}, defaultSetting, options),
-          markersMap   = {},
-          markersList  = [], // list of markers sorted by time
-          videoWrapper = $(this.el()),
+      var setting        = $.extend(true, {}, defaultSetting, options),
+          markersMap     = {},
+          markersList    = [], // list of markers sorted by time
+          videoWrapper   = $(this.el()),
           currentMarkerIndex  = -1, 
-          player       = this,
-          markerTip    = null,
-          breakOverlay = null,
-          overlayIndex = -1;
+          player         = this,
+          markerTip      = null,
+          breakOverlay   = null,
+          playerDuration = 0,
+          overlayIndex   = -1;
           
       function sortMarkersList() {
          // sort the list by time in asc order
@@ -89,7 +90,7 @@
       }
       
       function getPosition(marker){
-         return (setting.markerTip.time(marker) / player.duration()) * 100
+         return (setting.markerTip.time(marker) / playerDuration) * 100
       }
       
       function createMarkerDiv(marker, duration) {
@@ -243,7 +244,7 @@
                return setting.markerTip.time(markersList[index + 1]);
             } 
             // next marker time of last marker would be end of video time
-            return player.duration();
+            return playerDuration;
          }
          var currentTime = player.currentTime();
          var newMarkerIndex;
@@ -295,7 +296,7 @@
          if (setting.markerTip.display) {
             initializeMarkerTip();
          }
-      
+         playerDuration = options.duration || player.duration();
          // remove existing markers if already initialized
          player.markers.removeAll();
          addMarkers(options.markers);

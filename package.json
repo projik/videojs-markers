@@ -3,8 +3,8 @@
   "description": "video marker breaks plugin for video.js",
   "version": "0.5.1",
   "peerDependencies": {
-    "video-js": "4.0",
-    "jquery": "1.10.2"
+    "video-js": "*",
+    "jquery": "1.11.3"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
